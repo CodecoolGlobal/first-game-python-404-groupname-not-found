@@ -3,20 +3,63 @@ import curses
 from copy import deepcopy
 
 def main():
-    map = lab.openmap("map.txt")
-    pCoords = lab.atplace(map)
+    menumap = lab.openmap("menu.txt")
+    pCoords = lab.atplace(menumap)
 
     gameState = {
         "playerX": pCoords[1],
         "playerY": pCoords[0],
-        "map": map,
+        "map": menumap,
         "won": False,
-        "difficulty": "hard"
+        "difficulty": "easy"
         }
     
+    menu(gameState)
+    # game(gameState)
+
+
+def menu(gameState):
+    try:
+        menu = curses.initscr()
+        curses.cbreak()
+        menu.keypad(1)
+        curses.noecho()
+        key = ''
+        menu.addstr(0, 0, lab.printmap(gameState["map"]))
+        while key != curses.KEY_END:  # End key ends the program
+            key = menu.getch()
+            menu.refresh()
+            if key == curses.KEY_UP:
+                gameState = move("up", gameState)
+            elif key == curses.KEY_DOWN:
+                gameState = move("down", gameState)
+            elif key == curses.KEY_LEFT:
+                gameState = move("left", gameState)
+            elif key == curses.KEY_RIGHT:
+                gameState = move("right", gameState)
+            menu.addstr(0, 0, lab.printmap(gameState["map"]))
+            menu.refresh()
+            
+            if gameState["playerY"] == 18 and gameState["playerX"] == 30:
+                break
+            elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
+                startgame(gameState, "hard")
+            elif gameState["playerY"] == 12 and gameState["playerX"] == 49:
+                startgame(gameState, "easy")
+    except Exception as e:
+        curses.endwin()
+        print(f"Something went wrong!\n {e}")
+    curses.endwin()
+
+def startgame(gameState, difficulty):
+    map = lab.openmap("map.txt")
+    pCoords = lab.atplace(map)
+    gameState["map"] = map
+    gameState["playerY"] = pCoords[0]
+    gameState["playerX"] = pCoords[1]
+    gameState["difficulty"] = difficulty
     game(gameState)
-
-
+    
 def move(dir, gameState):
     """ Moves player character bz 1 tile in the given direction """
     maze = gameState["map"]
