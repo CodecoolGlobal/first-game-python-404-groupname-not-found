@@ -1,18 +1,17 @@
 import lab
 import curses
+import pygame
 
 
 def main():
     map = lab.openmap("map.txt")
     pCoords = lab.atplace(map)
-
     gameState = {
         "playerX": pCoords[1],
         "playerY": pCoords[0],
         "map": map,
         "won": False
         }
-
     game(gameState)
 
 
@@ -51,6 +50,8 @@ def direction(dir):  # Converts direction string to vector
 
 def game(gameState):  # display and user input
     try:
+ 
+        pygame.init()
         screen = curses.initscr()
         curses.cbreak()
         screen.keypad(1)
@@ -58,6 +59,7 @@ def game(gameState):  # display and user input
         key = ''
         screen.addstr(0, 0, lab.printmap(gameState["map"]))
         while key != curses.KEY_END:  # End key ends the program
+            drawMap(gameState, pygame)
             key = screen.getch()
             if not gameState["won"]:
                 screen.refresh()
@@ -85,6 +87,21 @@ def game(gameState):  # display and user input
         print("Something went wrong!\n%s" % (e))
     curses.endwin()
 
+
+def drawMap(gameState, pygame):
+    map = gameState["map"]
+    black = (0, 0, 0)
+    display_surface = pygame.display.set_mode(((len(map[0])-1)*15, len(map)*15))
+    display_surface.fill((255, 255, 255)) 
+    pygame.draw.rect(display_surface, (255, 0, 0), (15*gameState["playerX"], 15*gameState["playerY"], 15, 15))
+    for row in range(len(map)):
+        for col in range(len(map[row])):
+            if map[row][col] == "X":
+                pygame.draw.rect(display_surface, black, (15*col, 15*row, 15, 15))
+            elif map[row][col] == "O":
+                pygame.draw.rect(display_surface, (255, 0, 255), (15*col, 15*row, 15, 15))
+    pygame.display.update()
+    return display_surface
 
 if __name__ == "__main__":
     main()
