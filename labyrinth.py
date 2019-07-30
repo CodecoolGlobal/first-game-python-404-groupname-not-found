@@ -1,6 +1,6 @@
 import lab
 import curses
-
+from copy import deepcopy
 
 def main():
     map = lab.openmap("map.txt")
@@ -10,9 +10,10 @@ def main():
         "playerX": pCoords[1],
         "playerY": pCoords[0],
         "map": map,
-        "won": False
+        "won": False,
+        "difficulty": "hard"
         }
-
+    
     game(gameState)
 
 
@@ -36,6 +37,23 @@ def move(dir, gameState):
     return gameState
 
 
+def addfogofwar(gameState):
+    if gameState["difficulty"] == "hard":
+        hardmap = deepcopy(gameState["map"])
+        for lines in range(1,79):
+            for columns in range(1,24):
+                hardmap[columns][lines] = " "
+        for x in range(-2,4):
+            for y in range(-2,4):
+                try:
+                    hardmap[gameState["playerY"]-y][gameState["playerX"]-x] = gameState["map"][gameState["playerY"]-y][gameState["playerX"]-x]
+                except:
+                    pass    
+        return hardmap
+    elif gameState["difficulty"] == "easy":
+        return gameState["map"]
+    
+
 def direction(dir):  # Converts direction string to vector
     if dir == "up":
         return -1, 0
@@ -56,7 +74,7 @@ def game(gameState):  # display and user input
         screen.keypad(1)
         curses.noecho()
         key = ''
-        screen.addstr(0, 0, lab.printmap(gameState["map"]))
+        screen.addstr(0, 0, lab.printmap(addfogofwar(gameState)))
         while key != curses.KEY_END:  # End key ends the program
             key = screen.getch()
             if not gameState["won"]:
@@ -78,7 +96,7 @@ def game(gameState):  # display and user input
                                 curses.A_BLINK+curses.COLOR_BLUE
                                 )
             else:
-                screen.addstr(0, 0, lab.printmap(gameState["map"]))
+                screen.addstr(0, 0, lab.printmap(addfogofwar(gameState)))
             screen.refresh()
     except Exception as e:
         curses.endwin()
