@@ -11,7 +11,7 @@ def printmap(map): #Prints the whole map as a string
     string = ''.join(oneline)
     return string
 
-def victory():
+def victory(): #Reads and returns the "Victory text"
     with open("win.txt", "r") as vict:
         text = vict.readlines()
         return text
