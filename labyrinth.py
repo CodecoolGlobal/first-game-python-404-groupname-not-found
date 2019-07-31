@@ -1,8 +1,10 @@
 import lab
 import curses
+import pygame
+import sys
 from copy import deepcopy
 
-def main():
+def main(arg):
     menumap = lab.openmap("menu.txt")
     pCoords = lab.atplace(menumap)
 
@@ -13,8 +15,10 @@ def main():
         "won": False,
         "difficulty": "easy"
         }
-    
-    menu(gameState)
+    if len(arg) >= 2 and arg[1] == "-gui":
+        gameGui(gameState)
+    else:
+        menu(gameState)
     # game(gameState)
 
 
@@ -112,7 +116,32 @@ def direction(dir):  # Converts direction string to vector
         return 0, 0
 
 
-def game(gameState):  # display and user input
+def gameGui(gameState):  # display and user input
+    running = True
+    try:
+        pygame.init()
+        clock = pygame.time.Clock()
+        while running:
+            clock.tick(12)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            pressed = pygame.key.get_pressed()
+            if pressed[pygame.K_UP]:
+                gameState = move("up", gameState)
+            if pressed[pygame.K_DOWN]:
+                gameState = move("down", gameState)
+            if pressed[pygame.K_LEFT]:
+                gameState = move("left", gameState)
+            if pressed[pygame.K_RIGHT]:
+                gameState = move("right", gameState)
+            drawMap(gameState, pygame)
+
+    except Exception as e:
+        print(f"Something went wrong..\n{e}")
+
+
+def game(gameState):
     try:
         screen = curses.initscr()
         curses.cbreak()
@@ -149,5 +178,26 @@ def game(gameState):  # display and user input
     curses.endwin()
 
 
+def drawMap(gameState, pygame):
+    map = gameState["map"]
+    black = (0, 0, 0)
+    display_surface = pygame.display.set_mode(((len(map[0])-1)*15, len(map)*15))
+    display_surface.fill((255, 255, 255))
+    pygame.draw.rect(display_surface,
+                     (255, 0, 0),
+                     (15*gameState["playerX"], 15*gameState["playerY"], 15, 15)
+                     )
+    for row in range(len(map)):
+        for col in range(len(map[row])):
+            if map[row][col] == "X":
+                pygame.draw.rect(display_surface, black, (15*col, 15*row, 15, 15))
+            elif map[row][col] == "O":
+                pygame.draw.rect(display_surface,
+                                 (255, 0, 255), (15 * col, 15 * row, 15, 15)
+                                 )
+    pygame.display.update()
+    return display_surface
+
+
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
