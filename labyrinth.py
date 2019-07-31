@@ -3,11 +3,13 @@ import curses
 import pygame
 import sys
 from copy import deepcopy
+import traceback
+
 
 def main(arg):
     menumap = lab.openmap("menu.txt")
-    pCoords = lab.atplace(menumap)
-
+    pCoords = lab.atplace(menumap, "@")
+    
     gameState = {
         "playerX": pCoords[1],
         "playerY": pCoords[0],
@@ -30,6 +32,7 @@ def menu(gameState):
         curses.noecho()
         key = ''
         menu.addstr(0, 0, lab.printmap(gameState["map"]))
+        
         while key != curses.KEY_END:  # End key ends the program
             key = menu.getch()
             menu.refresh()
@@ -44,25 +47,29 @@ def menu(gameState):
             menu.addstr(0, 0, lab.printmap(gameState["map"]))
             menu.refresh()
             
-            option = stepOnChar(gameState, gameState["map"])
-            if option = "exit":
+            option = stepOnChar(gameState)
+            if option == "exit":
                 curses.endwin()
                 exit()
-            elif option = "hard":
+                break
+            elif option == "hard":
                 curses.endwin()
                 startGame(gameState, "hard")
-            elif option = "easy":
+                break
+            elif option == "easy":
                 curses.endwin()
                 startGame(gameState, "easy")
+                break
+
     except Exception as e:
         curses.endwin()
         print(f"Something went wrong!\n {e}")
-    curses.endwin()
+        print(traceback.format_exc())
+        print(gameState["playerY"], gameState["playerX"])
 
 def startGame(gameState, difficulty):
-    map = lab.openmap("map.txt")
-    pCoords = lab.atplace(map)
-    gameState["map"] = map
+    gameState["map"] = lab.openmap("map.txt")
+    pCoords = lab.atplace(gameState["map"], "@")
     gameState["playerY"] = pCoords[0]
     gameState["playerX"] = pCoords[1]
     gameState["difficulty"] = difficulty
@@ -201,14 +208,20 @@ def drawMap(gameState, pygame):
     return display_surface
 
 
-def stepOnChar(gameState,map):
-    if gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map)lab.atplace(map, "")[1]:
-        return "exit"
-    elif gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map, "")[1]:
-        return "easy"
-    elif gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map, "")[1]:
-        return "hard"
-
+def stepOnChar(gameState):
+    try:    
+        # qPlace = lab.atplace(gameState["map"], "Q")
+        # ePlace = lab.atplace(gameState["map"], 'E')
+        # hPlace = lab.atplace(gameState["map"], "H")
+        # raise Exception(gameState["playerY"])
+        if gameState["playerY"] == 18 and gameState["playerX"] == 30:
+            return "exit"
+        elif gameState["playerY"] == 12 and gameState["playerX"] == 49:
+            return "easy"
+        elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
+            return "hard"
+    except:
+        print(traceback.format_exc())
 
 if __name__ == "__main__":
     main(sys.argv)
