@@ -44,20 +44,22 @@ def menu(gameState):
             menu.addstr(0, 0, lab.printmap(gameState["map"]))
             menu.refresh()
             
-            if gameState["playerY"] == 18 and gameState["playerX"] == 30:
-                break
-            elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
+            option = stepOnChar(gameState, gameState["map"])
+            if option = "exit":
                 curses.endwin()
-                startgame(gameState, "hard")
-            elif gameState["playerY"] == 12 and gameState["playerX"] == 49:
+                exit()
+            elif option = "hard":
                 curses.endwin()
-                startgame(gameState, "easy")
+                startGame(gameState, "hard")
+            elif option = "easy":
+                curses.endwin()
+                startGame(gameState, "easy")
     except Exception as e:
         curses.endwin()
         print(f"Something went wrong!\n {e}")
     curses.endwin()
 
-def startgame(gameState, difficulty):
+def startGame(gameState, difficulty):
     map = lab.openmap("map.txt")
     pCoords = lab.atplace(map)
     gameState["map"] = map
@@ -86,7 +88,7 @@ def move(dir, gameState):
     return gameState
 
 
-def addfogofwar(gameState):
+def addFogOfWar(gameState):
     if gameState["difficulty"] == "hard":
         hardmap = deepcopy(gameState["map"])
         for lines in range(1,79):
@@ -148,7 +150,7 @@ def game(gameState):
         screen.keypad(1)
         curses.noecho()
         key = ''
-        screen.addstr(0, 0, lab.printmap(addfogofwar(gameState)))
+        screen.addstr(0, 0, lab.printmap(addFogOfWar(gameState)))
         while key != curses.KEY_END:  # End key ends the program
             key = screen.getch()
             if not gameState["won"]:
@@ -170,7 +172,7 @@ def game(gameState):
                                 curses.A_BLINK+curses.COLOR_BLUE
                                 )
             else:
-                screen.addstr(0, 0, lab.printmap(addfogofwar(gameState)))
+                screen.addstr(0, 0, lab.printmap(addFogOfWar(gameState)))
             # screen.refresh()
     except Exception as e:
         curses.endwin()
@@ -197,6 +199,15 @@ def drawMap(gameState, pygame):
                                  )
     pygame.display.update()
     return display_surface
+
+
+def stepOnChar(gameState,map):
+    if gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map)lab.atplace(map, "")[1]:
+        return "exit"
+    elif gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map, "")[1]:
+        return "easy"
+    elif gameState["playerY"] == lab.atplace(map, "")[0] and gameState["playerX"] == lab.atplace(map, "")[1]:
+        return "hard"
 
 
 if __name__ == "__main__":
