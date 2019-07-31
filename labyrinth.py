@@ -43,8 +43,10 @@ def menu(gameState):
             if gameState["playerY"] == 18 and gameState["playerX"] == 30:
                 break
             elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
+                curses.endwin()
                 startgame(gameState, "hard")
             elif gameState["playerY"] == 12 and gameState["playerX"] == 49:
+                curses.endwin()
                 startgame(gameState, "easy")
     except Exception as e:
         curses.endwin()
@@ -140,7 +142,7 @@ def game(gameState):  # display and user input
                                 )
             else:
                 screen.addstr(0, 0, lab.printmap(addfogofwar(gameState)))
-            screen.refresh()
+            # screen.refresh()
     except Exception as e:
         curses.endwin()
         print("Something went wrong!\n%s" % (e))
