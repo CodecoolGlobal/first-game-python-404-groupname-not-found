@@ -6,7 +6,7 @@ from copy import deepcopy
 
 def main(arg):
     menumap = lab.openmap("menu.txt")
-    pCoords = lab.atplace(menumap)
+    pCoords = lab.atplace(menumap, "@")
 
     gameState = {
         "playerX": pCoords[1],
@@ -45,7 +45,7 @@ def menu(gameState):
             menu.refresh()
             
             if gameState["playerY"] == 18 and gameState["playerX"] == 30:
-                break
+                exit()
             elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
                 startgame(gameState, "hard")
             elif gameState["playerY"] == 12 and gameState["playerX"] == 49:
@@ -57,7 +57,7 @@ def menu(gameState):
 
 def startgame(gameState, difficulty):
     map = lab.openmap("map.txt")
-    pCoords = lab.atplace(map)
+    pCoords = lab.atplace(map,"@")
     gameState["map"] = map
     gameState["playerY"] = pCoords[0]
     gameState["playerX"] = pCoords[1]

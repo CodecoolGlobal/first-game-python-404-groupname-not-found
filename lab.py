@@ -16,11 +16,11 @@ def victory(): #Reads and returns the "Victory text"
         text = vict.readlines()
         return text
 
-def atplace(map): #Returns the coordinates of the @ symbol
+def atplace(map, char): #Returns the coordinates of the @ symbol
     place = []
     for y in range(len(map)):
-        if "@" in map[y]:
+        if char in map[y]:
             place.append(y)
-            place.append(map[y].index("@"))
+            place.append(map[y].index(char))
             break
     return place
