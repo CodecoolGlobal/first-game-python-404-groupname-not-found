@@ -104,6 +104,16 @@ def gameGui(gameState):  # display and user input
                 gameState = move("right", gameState)
             drawMap(gameState, pygame)
 
+            if gameState["menu"]:
+                option = stepOnChar(gameState)
+                if option == "exit":
+                    exit()
+                elif option == "hard":
+                    startGame(gameState, "hard")
+                elif option == "easy":
+                    startGame(gameState, "easy")
+
+
     except Exception as e:
         print(f"Something went wrong..\n{e}")
 
