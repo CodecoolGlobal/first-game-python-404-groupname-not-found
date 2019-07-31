@@ -8,73 +8,31 @@ import traceback
 
 def main(arg):
     menumap = lab.openmap("menu.txt")
-    pCoords = lab.atplace(menumap, "@")
-    
+    pCoords = lab.atplace(menumap, '@')
+
     gameState = {
         "playerX": pCoords[1],
         "playerY": pCoords[0],
         "map": menumap,
         "won": False,
-        "difficulty": "easy"
+        "difficulty": "easy",
+        "menu": True
         }
     if len(arg) >= 2 and arg[1] == "-gui":
         gameGui(gameState)
     else:
-        menu(gameState)
-    # game(gameState)
+        game(gameState)
 
-
-def menu(gameState):
-    try:
-        menu = curses.initscr()
-        curses.cbreak()
-        menu.keypad(1)
-        curses.noecho()
-        key = ''
-        menu.addstr(0, 0, lab.printmap(gameState["map"]))
-        
-        while key != curses.KEY_END:  # End key ends the program
-            key = menu.getch()
-            menu.refresh()
-            if key == curses.KEY_UP:
-                gameState = move("up", gameState)
-            elif key == curses.KEY_DOWN:
-                gameState = move("down", gameState)
-            elif key == curses.KEY_LEFT:
-                gameState = move("left", gameState)
-            elif key == curses.KEY_RIGHT:
-                gameState = move("right", gameState)
-            menu.addstr(0, 0, lab.printmap(gameState["map"]))
-            menu.refresh()
-            
-            option = stepOnChar(gameState)
-            if option == "exit":
-                curses.endwin()
-                exit()
-                break
-            elif option == "hard":
-                curses.endwin()
-                startGame(gameState, "hard")
-                break
-            elif option == "easy":
-                curses.endwin()
-                startGame(gameState, "easy")
-                break
-
-    except Exception as e:
-        curses.endwin()
-        print(f"Something went wrong!\n {e}")
-        print(traceback.format_exc())
-        print(gameState["playerY"], gameState["playerX"])
 
 def startGame(gameState, difficulty):
     gameState["map"] = lab.openmap("map.txt")
-    pCoords = lab.atplace(gameState["map"], "@")
+    pCoords = lab.atplace(gameState["map"], '@')
     gameState["playerY"] = pCoords[0]
     gameState["playerX"] = pCoords[1]
     gameState["difficulty"] = difficulty
-    game(gameState)
-    
+    gameState["menu"] = False
+
+
 def move(dir, gameState):
     """ Moves player character bz 1 tile in the given direction """
     maze = gameState["map"]
@@ -98,19 +56,19 @@ def move(dir, gameState):
 def addFogOfWar(gameState):
     if gameState["difficulty"] == "hard":
         hardmap = deepcopy(gameState["map"])
-        for lines in range(1,79):
-            for columns in range(1,24):
+        for lines in range(1, 79):
+            for columns in range(1, 24):
                 hardmap[columns][lines] = " "
-        for x in range(-2,4):
-            for y in range(-2,4):
+        for x in range(-2, 4):
+            for y in range(-2, 4):
                 try:
                     hardmap[gameState["playerY"]-y][gameState["playerX"]-x] = gameState["map"][gameState["playerY"]-y][gameState["playerX"]-x]
                 except:
-                    pass    
+                    pass
         return hardmap
     elif gameState["difficulty"] == "easy":
         return gameState["map"]
-    
+
 
 def direction(dir):  # Converts direction string to vector
     if dir == "up":
@@ -170,6 +128,19 @@ def game(gameState):
                     gameState = move("left", gameState)
                 elif key == curses.KEY_RIGHT:
                     gameState = move("right", gameState)
+
+            if gameState["menu"]:
+                option = stepOnChar(gameState)
+                if option == "exit":
+                    curses.endwin()
+                    exit()
+                elif option == "hard":
+                    curses.endwin()
+                    startGame(gameState, "hard")
+                elif option == "easy":
+                    curses.endwin()
+                    startGame(gameState, "easy")
+
             if gameState["won"]:
                 text = lab.victory()
                 for lines in range(len(text)):
@@ -209,7 +180,7 @@ def drawMap(gameState, pygame):
 
 
 def stepOnChar(gameState):
-    try:    
+    try:
         # qPlace = lab.atplace(gameState["map"], "Q")
         # ePlace = lab.atplace(gameState["map"], 'E')
         # hPlace = lab.atplace(gameState["map"], "H")
@@ -222,6 +193,7 @@ def stepOnChar(gameState):
             return "hard"
     except:
         print(traceback.format_exc())
+
 
 if __name__ == "__main__":
     main(sys.argv)
