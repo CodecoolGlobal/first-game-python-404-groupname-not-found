@@ -1,21 +1,13 @@
 import lab
 import curses
-<<<<<<< HEAD
 import pygame
 import sys
-
-
-def main(arg):
-    map = lab.openmap("map.txt")
-    pCoords = lab.atplace(map)
-=======
 from copy import deepcopy
 
-def main():
+def main(arg):
     menumap = lab.openmap("menu.txt")
     pCoords = lab.atplace(menumap)
 
->>>>>>> 137caf3fdc7ed855ddb08b0ef4c82c389ce7d542
     gameState = {
         "playerX": pCoords[1],
         "playerY": pCoords[0],
@@ -23,17 +15,12 @@ def main():
         "won": False,
         "difficulty": "easy"
         }
-<<<<<<< HEAD
     if len(arg) >= 2 and arg[1] == "-gui":
         gameGui(gameState)
     else:
-        game(gameState)
-=======
-    
-    menu(gameState)
+        menu(gameState)
     # game(gameState)
 
->>>>>>> 137caf3fdc7ed855ddb08b0ef4c82c389ce7d542
 
 def menu(gameState):
     try:
