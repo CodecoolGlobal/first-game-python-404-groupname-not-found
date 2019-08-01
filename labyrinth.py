@@ -4,7 +4,7 @@ import pygame
 import sys
 from copy import deepcopy
 import traceback
-
+import time
 
 def main(arg):
     menumap = lab.openmap("menu.txt")
@@ -16,7 +16,8 @@ def main(arg):
         "map": menumap,
         "won": False,
         "difficulty": "easy",
-        "menu": True
+        "menu": True,
+        "auto": False
         }
     if len(arg) >= 2 and arg[1] == "-gui":
         gameGui(gameState)
@@ -70,7 +71,7 @@ def addFogOfWar(gameState):
                 except:
                     pass
         return hardmap
-    elif gameState["difficulty"] == "easy":
+    elif gameState["difficulty"] == "easy" or gameState["difficulty"] == "auto":
         return gameState["map"]
 
 
@@ -98,20 +99,23 @@ def gameGui(gameState):  # display and user input
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-            pressed = pygame.key.get_pressed()
-            if not gameState["won"]:
-                if pressed[pygame.K_UP]:
-                    gameState = move("up", gameState)
-                if pressed[pygame.K_DOWN]:
-                    gameState = move("down", gameState)
-                if pressed[pygame.K_LEFT]:
-                    gameState = move("left", gameState)
-                if pressed[pygame.K_RIGHT]:
-                    gameState = move("right", gameState)
-            if pressed[pygame.K_SPACE]:
-                startGame(gameState, "easy", "menu.txt", True)
-            drawMap(gameState, pygame)
-
+            if gameState["auto"]:
+                autoPlay(gameState)
+            else:
+                pressed = pygame.key.get_pressed()
+                if not gameState["won"]:
+                    if pressed[pygame.K_UP]:
+                        gameState = move("up", gameState)
+                    if pressed[pygame.K_DOWN]:
+                        gameState = move("down", gameState)
+                    if pressed[pygame.K_LEFT]:
+                        gameState = move("left", gameState)
+                    if pressed[pygame.K_RIGHT]:
+                        gameState = move("right", gameState)
+                if pressed[pygame.K_SPACE]:
+                    startGame(gameState, "easy", "menu.txt", True)
+                drawMap(gameState, pygame)
+            
             if gameState["menu"]:
                 option = stepOnChar(gameState)
                 if option == "exit":
@@ -120,6 +124,9 @@ def gameGui(gameState):  # display and user input
                     startGame(gameState, "hard", "map.txt")
                 elif option == "easy":
                     startGame(gameState, "easy", "map.txt")
+                elif option == "auto":
+                    gameState["auto"] = True
+                    startGame(gameState, "auto", "map.txt")
 
             if gameState["won"] == True:
                 victorySound()
@@ -220,6 +227,8 @@ def stepOnChar(gameState):
             return "easy"
         elif gameState["playerY"] == 18 and gameState["playerX"] == 49:
             return "hard"
+        elif gameState["playerY"] == 12 and gameState["playerX"] == 30:
+            return "auto"
     except:
         print(traceback.format_exc())
 
@@ -230,6 +239,14 @@ def victorySound():
     vict = pygame.mixer.Sound('tada.wav')
     pygame.mixer.Sound.play(vict, loops= 1)
 
+def autoPlay(gameState):
+    with open("solution.txt", "r") as solution:
+        dirlist = solution.readlines()
+        for dir in dirlist:
+            gameState = move(dir.rstrip(), gameState)
+            drawMap(gameState, pygame)
+            time.sleep(0.5)
+    gameState["auto"] = False
 
 if __name__ == "__main__":
     main(sys.argv)
