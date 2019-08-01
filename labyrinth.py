@@ -245,7 +245,7 @@ def autoPlay(gameState):
         for dir in dirlist:
             gameState = move(dir.rstrip(), gameState)
             drawMap(gameState, pygame)
-            time.sleep(0.5)
+            time.sleep(0.1)
     gameState["auto"] = False
 
 if __name__ == "__main__":
