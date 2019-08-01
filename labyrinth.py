@@ -1,5 +1,4 @@
 import lab
-import curses
 import pygame
 import sys
 from copy import deepcopy
@@ -19,10 +18,8 @@ def main(arg):
         "menu": True,
         "auto": False
         }
-    if len(arg) >= 2 and arg[1] == "-gui":
-        gameGui(gameState)
-    else:
-        game(gameState)
+    
+    gameGui(gameState)
 
 
 def startGame(gameState, difficulty, level, restart=False):
@@ -134,56 +131,6 @@ def gameGui(gameState):  # display and user input
     except Exception as e:
         print(f"Something went wrong..\n{e}")
         print(traceback.format_exc())
-
-
-def game(gameState):
-    try:
-        screen = curses.initscr()
-        curses.cbreak()
-        screen.keypad(1)
-        curses.noecho()
-        key = ''
-        screen.addstr(0, 0, lab.printmap(addFogOfWar(gameState)))
-        while key != curses.KEY_END:  # End key ends the program
-            key = screen.getch()
-            if not gameState["won"]:
-                screen.refresh()
-                if key == curses.KEY_UP:
-                    gameState = move("up", gameState)
-                elif key == curses.KEY_DOWN:
-                    gameState = move("down", gameState)
-                elif key == curses.KEY_LEFT:
-                    gameState = move("left", gameState)
-                elif key == curses.KEY_RIGHT:
-                    gameState = move("right", gameState)
-
-            if gameState["menu"]:
-                option = stepOnChar(gameState)
-                if option == "exit":
-                    curses.endwin()
-                    exit()
-                elif option == "hard":
-                    curses.endwin()
-                    startGame(gameState, "hard", "map.txt")
-                elif option == "easy":
-                    curses.endwin()
-                    startGame(gameState, "easy", "map.txt")
-
-            if gameState["won"]:
-                text = lab.victory()
-                for lines in range(len(text)):
-                    screen.addstr(
-                                8+lines,
-                                (80-len(text[0]))//2, text[lines].rstrip(),
-                                curses.A_BLINK+curses.COLOR_BLUE
-                                )
-            else:
-                screen.addstr(0, 0, lab.printmap(addFogOfWar(gameState)))
-            # screen.refresh()
-    except Exception as e:
-        curses.endwin()
-        print("Something went wrong!\n%s" % (e))
-    curses.endwin()
 
 
 def drawMap(gameState, pygame):
