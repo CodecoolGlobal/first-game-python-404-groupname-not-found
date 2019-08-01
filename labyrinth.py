@@ -87,6 +87,7 @@ def gameGui(gameState):  # display and user input
     running = True
     try:
         pygame.init()
+        pygame.font.init()
         clock = pygame.time.Clock()
         while running:
             clock.tick(12)
@@ -114,8 +115,10 @@ def gameGui(gameState):  # display and user input
                     startGame(gameState, "easy")
 
 
+
     except Exception as e:
         print(f"Something went wrong..\n{e}")
+        print(traceback.format_exc())
 
 
 def game(gameState):
@@ -169,24 +172,32 @@ def game(gameState):
 
 
 def drawMap(gameState, pygame):
-    map = gameState["map"]
+    scale = 20
+    font = pygame.font.SysFont("ubuntumono", scale)
+    map = addFogOfWar(gameState)
     black = (0, 0, 0)
-    display_surface = pygame.display.set_mode(((len(map[0])-1)*15, len(map)*15))
+    display_surface = pygame.display.set_mode(((len(map[0])-1)*scale, len(map)*scale))
     display_surface.fill((255, 255, 255))
     pygame.draw.rect(display_surface,
                      (255, 0, 0),
-                     (15*gameState["playerX"], 15*gameState["playerY"], 15, 15)
+                     (scale*gameState["playerX"], scale*gameState["playerY"], scale, scale)
                      )
     for row in range(len(map)):
         for col in range(len(map[row])):
             if map[row][col] == "X":
-                pygame.draw.rect(display_surface, black, (15*col, 15*row, 15, 15))
-            elif map[row][col] == "O":
+                pygame.draw.rect(display_surface, black, (scale*col, scale*row, scale, scale))
+            elif map[row][col] == "O" and not gameState["menu"]:
                 pygame.draw.rect(display_surface,
-                                 (255, 0, 255), (15 * col, 15 * row, 15, 15)
+                                 (255, 0, 255), (scale * col, scale * row, scale, scale)
                                  )
+            elif map[row][col] == "@":
+                pass
+            else:
+                text_surface = font.render(map[row][col], True,  (0, 0, 0) )
+                display_surface.blit(text_surface, (scale * col, scale * row))
     pygame.display.update()
-    return display_surface
+    pygame.display.flip()
+    #return display_surface
 
 
 def stepOnChar(gameState):
