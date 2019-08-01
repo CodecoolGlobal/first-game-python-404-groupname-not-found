@@ -32,7 +32,7 @@ def init():
 
 
 def changeState(gameState, difficulty, level, restart=False):
-    '''Sets gameState between menu and game level'''
+    """Sets gameState between menu and game level"""
     gameState["map"] = lab.openmap(level)
     pCoords = lab.atplace(gameState["map"], '@')
     gameState["playerY"] = pCoords[0]
@@ -46,7 +46,7 @@ def changeState(gameState, difficulty, level, restart=False):
 
 
 def move(dir, gameState):
-    """ Moves player character bz 1 tile in the given direction """
+    """ Moves player character by 1 tile in the given direction """
     maze = gameState["map"]
     playerY = gameState["playerY"]
     playerX = gameState["playerX"]
@@ -66,7 +66,7 @@ def move(dir, gameState):
 
 
 def addFogOfWar(gameState):
-    '''Hides map elements outside of the players vision range'''
+    """Hides map elements outside of the player's vision range"""
     if gameState["difficulty"] == "hard":
         hardmap = deepcopy(gameState["map"])
         for lines in range(1, 79):
@@ -75,7 +75,8 @@ def addFogOfWar(gameState):
         for x in range(-2, 4):
             for y in range(-2, 4):
                 try:
-                    hardmap[gameState["playerY"]-y][gameState["playerX"]-x] = gameState["map"][gameState["playerY"]-y][gameState["playerX"]-x]
+                    if gameState["playerY"]-y >= 0: # Without this check it passes negative nums as an index and displays tiles on the bottom of the screen
+                        hardmap[gameState["playerY"]-y][gameState["playerX"]-x] = gameState["map"][gameState["playerY"]-y][gameState["playerX"]-x]
                 except Exception:
                     pass
         return hardmap
@@ -83,7 +84,7 @@ def addFogOfWar(gameState):
         return gameState["map"]
 
 
-def direction(dir):  # Converts direction string to vector
+def direction(dir):
     """Converts direction to vector"""
     if dir == "up":
         return -1, 0
@@ -97,7 +98,8 @@ def direction(dir):  # Converts direction string to vector
         return 0, 0
 
 
-def gameLoop(gameState):  # display and user input
+def gameLoop(gameState):
+    """Main game loop: reading inputs, calling display function"""
     running = True
     lastWon = False
     try:
@@ -127,7 +129,7 @@ def gameLoop(gameState):  # display and user input
                 drawMap(gameState, pygame)
 
             if not lastWon and gameState["won"]:
-                victorySound()
+                playSound("victory")
 
             menuOptions(gameState)
             lastWon = gameState["won"]
@@ -138,21 +140,25 @@ def gameLoop(gameState):  # display and user input
 
 
 def menuOptions(gameState):
+    """Initiates different game states"""
     if gameState["menu"]:
         option = stepOnChar(gameState)
         if option == "exit":
             exit()
         elif option == "hard":
+            playSound(option)
             changeState(gameState, "hard", "map.txt")
         elif option == "easy":
+            playSound(option)
             changeState(gameState, "easy", "map.txt")
         elif option == "auto":
             gameState["auto"] = True
+            playSound(option)
             changeState(gameState, "auto", "map.txt")
 
 
 def drawMap(gameState, pygame):
-    """converts the map to polygons and renders them on the main window"""
+    """Converts the map to polygons and renders them on the main window"""
     scale = 20
     font = pygame.font.SysFont("ubuntumono", scale)
     map = addFogOfWar(gameState)
@@ -188,6 +194,7 @@ def drawMap(gameState, pygame):
 
 
 def stepOnChar(gameState):
+    """Determines whether the player is on a menu trigger tile"""
     try:
         # qPlace = lab.atplace(gameState["map"], "Q")
         # ePlace = lab.atplace(gameState["map"], 'E')
@@ -205,15 +212,20 @@ def stepOnChar(gameState):
         print(traceback.format_exc())
 
 
-def victorySound():
+def playSound(sound):
+    """Plays a soundeffect"""
     # pygame.mixer.pre.init(frequency=44100, size=-16, channels=8, buffer=4096)
     pygame.mixer.init()
-    vict = pygame.mixer.Sound('tada.wav')
-    pygame.mixer.Sound.play(vict, loops=0)
+    soundLibrary = {}
+    soundLibrary["victory"] = pygame.mixer.Sound('tada.wav')
+    soundLibrary["easy"] = pygame.mixer.Sound('startlevel.wav') 
+    soundLibrary["hard"] = pygame.mixer.Sound('evil.wav')
+    soundLibrary["auto"] = pygame.mixer.Sound('startlevel.wav')
+    pygame.mixer.Sound.play(soundLibrary[sound], loops=0)
 
 
 def autoPlay(gameState):
-    # Automatic solution from a pre-made textfile
+    """Automatic solution from a pre-made textfile"""
     with open("solution.txt", "r") as solution:
         dirlist = solution.readlines()
         for dir in dirlist:
