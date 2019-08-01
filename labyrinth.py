@@ -24,13 +24,17 @@ def main(arg):
         game(gameState)
 
 
-def startGame(gameState, difficulty):
-    gameState["map"] = lab.openmap("map.txt")
+def startGame(gameState, difficulty, level, restart=False):
+    gameState["map"] = lab.openmap(level)
     pCoords = lab.atplace(gameState["map"], '@')
     gameState["playerY"] = pCoords[0]
     gameState["playerX"] = pCoords[1]
     gameState["difficulty"] = difficulty
-    gameState["menu"] = False
+    gameState["won"] = False
+    if restart:    
+        gameState["menu"] = True
+    else:
+        gameState["menu"] = False 
 
 
 def move(dir, gameState):
@@ -95,14 +99,17 @@ def gameGui(gameState):  # display and user input
                 if event.type == pygame.QUIT:
                     running = False
             pressed = pygame.key.get_pressed()
-            if pressed[pygame.K_UP]:
-                gameState = move("up", gameState)
-            if pressed[pygame.K_DOWN]:
-                gameState = move("down", gameState)
-            if pressed[pygame.K_LEFT]:
-                gameState = move("left", gameState)
-            if pressed[pygame.K_RIGHT]:
-                gameState = move("right", gameState)
+            if not gameState["won"]:
+                if pressed[pygame.K_UP]:
+                    gameState = move("up", gameState)
+                if pressed[pygame.K_DOWN]:
+                    gameState = move("down", gameState)
+                if pressed[pygame.K_LEFT]:
+                    gameState = move("left", gameState)
+                if pressed[pygame.K_RIGHT]:
+                    gameState = move("right", gameState)
+            if pressed[pygame.K_SPACE]:
+                startGame(gameState, "easy", "menu.txt", True)
             drawMap(gameState, pygame)
 
             if gameState["menu"]:
@@ -110,9 +117,9 @@ def gameGui(gameState):  # display and user input
                 if option == "exit":
                     exit()
                 elif option == "hard":
-                    startGame(gameState, "hard")
+                    startGame(gameState, "hard", "map.txt")
                 elif option == "easy":
-                    startGame(gameState, "easy")
+                    startGame(gameState, "easy", "map.txt")
 
             if gameState["won"] == True:
                 victorySound()
@@ -150,10 +157,10 @@ def game(gameState):
                     exit()
                 elif option == "hard":
                     curses.endwin()
-                    startGame(gameState, "hard")
+                    startGame(gameState, "hard", "map.txt")
                 elif option == "easy":
                     curses.endwin()
-                    startGame(gameState, "easy")
+                    startGame(gameState, "easy", "map.txt")
 
             if gameState["won"]:
                 text = lab.victory()
