@@ -1,38 +1,48 @@
 import lab
 import pygame
-import sys
 from copy import deepcopy
 import traceback
 import time
 
-def main(arg):
-    menumap = lab.openmap("menu.txt")
-    pCoords = lab.atplace(menumap, '@')
 
-    gameState = {
-        "playerX": pCoords[1],
-        "playerY": pCoords[0],
-        "map": menumap,
-        "won": False,
-        "difficulty": "easy",
-        "menu": True,
-        "auto": False
-        }
-    
-    gameGui(gameState)
+def main():
+    gameState = init()
+    gameLoop(gameState)
 
 
-def startGame(gameState, difficulty, level, restart=False):
+def init():
+    """Initialize setting"""
+    try:
+        menumap = lab.openmap("menu.txt")
+        pCoords = lab.atplace(menumap, '@')
+
+        gameState = {
+            "playerX": pCoords[1],
+            "playerY": pCoords[0],
+            "map": menumap,
+            "won": False,
+            "difficulty": "easy",
+            "menu": True,
+            "auto": False
+            }
+        return gameState
+    except Exception as e:
+        print(f"initialization failure!\nDetails:{e}")
+        exit()
+
+
+def changeState(gameState, difficulty, level, restart=False):
+    '''Sets gameState between menu and game level'''
     gameState["map"] = lab.openmap(level)
     pCoords = lab.atplace(gameState["map"], '@')
     gameState["playerY"] = pCoords[0]
     gameState["playerX"] = pCoords[1]
     gameState["difficulty"] = difficulty
     gameState["won"] = False
-    if restart:    
+    if restart:
         gameState["menu"] = True
     else:
-        gameState["menu"] = False 
+        gameState["menu"] = False
 
 
 def move(dir, gameState):
@@ -56,6 +66,7 @@ def move(dir, gameState):
 
 
 def addFogOfWar(gameState):
+    '''Hides map elements outside of the players vision range'''
     if gameState["difficulty"] == "hard":
         hardmap = deepcopy(gameState["map"])
         for lines in range(1, 79):
@@ -65,7 +76,7 @@ def addFogOfWar(gameState):
             for y in range(-2, 4):
                 try:
                     hardmap[gameState["playerY"]-y][gameState["playerX"]-x] = gameState["map"][gameState["playerY"]-y][gameState["playerX"]-x]
-                except:
+                except Exception:
                     pass
         return hardmap
     elif gameState["difficulty"] == "easy" or gameState["difficulty"] == "auto":
@@ -73,6 +84,7 @@ def addFogOfWar(gameState):
 
 
 def direction(dir):  # Converts direction string to vector
+    """Converts direction to vector"""
     if dir == "up":
         return -1, 0
     elif dir == "down":
@@ -85,7 +97,7 @@ def direction(dir):  # Converts direction string to vector
         return 0, 0
 
 
-def gameGui(gameState):  # display and user input
+def gameLoop(gameState):  # display and user input
     running = True
     lastWon = False
     try:
@@ -111,23 +123,13 @@ def gameGui(gameState):  # display and user input
                     if pressed[pygame.K_RIGHT]:
                         gameState = move("right", gameState)
                 if pressed[pygame.K_SPACE]:
-                    startGame(gameState, "easy", "menu.txt", True)
+                    changeState(gameState, "easy", "menu.txt", True)
                 drawMap(gameState, pygame)
-                
+
             if not lastWon and gameState["won"]:
                 victorySound()
 
-            if gameState["menu"]:
-                option = stepOnChar(gameState)
-                if option == "exit":
-                    exit()
-                elif option == "hard":
-                    startGame(gameState, "hard", "map.txt")
-                elif option == "easy":
-                    startGame(gameState, "easy", "map.txt")
-                elif option == "auto":
-                    gameState["auto"] = True
-                    startGame(gameState, "auto", "map.txt")
+            menuOptions(gameState)
             lastWon = gameState["won"]
 
     except Exception as e:
@@ -135,33 +137,54 @@ def gameGui(gameState):  # display and user input
         print(traceback.format_exc())
 
 
+def menuOptions(gameState):
+    if gameState["menu"]:
+        option = stepOnChar(gameState)
+        if option == "exit":
+            exit()
+        elif option == "hard":
+            changeState(gameState, "hard", "map.txt")
+        elif option == "easy":
+            changeState(gameState, "easy", "map.txt")
+        elif option == "auto":
+            gameState["auto"] = True
+            changeState(gameState, "auto", "map.txt")
+
+
 def drawMap(gameState, pygame):
+    """converts the map to polygons and renders them on the main window"""
     scale = 20
     font = pygame.font.SysFont("ubuntumono", scale)
     map = addFogOfWar(gameState)
     black = (0, 0, 0)
-    display_surface = pygame.display.set_mode(((len(map[0])-1)*scale, len(map)*scale))
+    display_surface = pygame.display.set_mode(((len(map[0])-1)*scale,
+                                              len(map) * scale))
     display_surface.fill((255, 255, 255))
-    pygame.draw.rect(display_surface,
-                     (255, 0, 0),
-                     (scale*gameState["playerX"], scale*gameState["playerY"], scale, scale)
-                     )
+
     for row in range(len(map)):
         for col in range(len(map[row])):
             if map[row][col] == "X":
-                pygame.draw.rect(display_surface, black, (scale*col, scale*row, scale, scale))
+                pygame.draw.rect(display_surface, black,
+                                 (scale*col, scale*row, scale, scale)
+                                 )
             elif map[row][col] == "O" and not gameState["menu"]:
                 pygame.draw.rect(display_surface,
-                                 (255, 0, 255), (scale * col, scale * row, scale, scale)
+                                 (255, 0, 255),
+                                 (scale * col, scale * row, scale, scale)
                                  )
             elif map[row][col] == "@":
-                pass
+                pygame.draw.rect(display_surface,
+                                 (255, 0, 0),
+                                 (scale*gameState["playerX"],
+                                  scale*gameState["playerY"],
+                                  scale,
+                                  scale)
+                                 )
             else:
-                text_surface = font.render(map[row][col], True,  (0, 0, 0) )
+                text_surface = font.render(map[row][col], True,  (0, 0, 0))
                 display_surface.blit(text_surface, (scale * col, scale * row))
     pygame.display.update()
     pygame.display.flip()
-    #return display_surface
 
 
 def stepOnChar(gameState):
@@ -178,7 +201,7 @@ def stepOnChar(gameState):
             return "hard"
         elif gameState["playerY"] == 12 and gameState["playerX"] == 30:
             return "auto"
-    except:
+    except Exception:
         print(traceback.format_exc())
 
 
@@ -186,9 +209,11 @@ def victorySound():
     # pygame.mixer.pre.init(frequency=44100, size=-16, channels=8, buffer=4096)
     pygame.mixer.init()
     vict = pygame.mixer.Sound('tada.wav')
-    pygame.mixer.Sound.play(vict, loops= 0)
+    pygame.mixer.Sound.play(vict, loops=0)
+
 
 def autoPlay(gameState):
+    # Automatic solution from a pre-made textfile
     with open("solution.txt", "r") as solution:
         dirlist = solution.readlines()
         for dir in dirlist:
@@ -197,5 +222,6 @@ def autoPlay(gameState):
             time.sleep(0.1)
     gameState["auto"] = False
 
+
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
