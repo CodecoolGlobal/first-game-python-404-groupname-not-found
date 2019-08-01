@@ -114,7 +114,8 @@ def gameGui(gameState):  # display and user input
                 elif option == "easy":
                     startGame(gameState, "easy")
 
-
+            if gameState["won"] == True:
+                victorySound()
 
     except Exception as e:
         print(f"Something went wrong..\n{e}")
@@ -214,6 +215,13 @@ def stepOnChar(gameState):
             return "hard"
     except:
         print(traceback.format_exc())
+
+
+def victorySound():
+    # pygame.mixer.pre.init(frequency=44100, size=-16, channels=8, buffer=4096)
+    pygame.mixer.init()
+    vict = pygame.mixer.Sound('tada.wav')
+    pygame.mixer.Sound.play(vict, loops= 1)
 
 
 if __name__ == "__main__":
