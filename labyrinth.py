@@ -87,6 +87,7 @@ def direction(dir):  # Converts direction string to vector
 
 def gameGui(gameState):  # display and user input
     running = True
+    lastWon = False
     try:
         pygame.init()
         pygame.font.init()
@@ -112,7 +113,10 @@ def gameGui(gameState):  # display and user input
                 if pressed[pygame.K_SPACE]:
                     startGame(gameState, "easy", "menu.txt", True)
                 drawMap(gameState, pygame)
-            
+                
+            if not lastWon and gameState["won"]:
+                victorySound()
+
             if gameState["menu"]:
                 option = stepOnChar(gameState)
                 if option == "exit":
@@ -124,9 +128,7 @@ def gameGui(gameState):  # display and user input
                 elif option == "auto":
                     gameState["auto"] = True
                     startGame(gameState, "auto", "map.txt")
-
-            if gameState["won"] == True:
-                victorySound()
+            lastWon = gameState["won"]
 
     except Exception as e:
         print(f"Something went wrong..\n{e}")
@@ -184,7 +186,7 @@ def victorySound():
     # pygame.mixer.pre.init(frequency=44100, size=-16, channels=8, buffer=4096)
     pygame.mixer.init()
     vict = pygame.mixer.Sound('tada.wav')
-    pygame.mixer.Sound.play(vict, loops= 1)
+    pygame.mixer.Sound.play(vict, loops= 0)
 
 def autoPlay(gameState):
     with open("solution.txt", "r") as solution:
